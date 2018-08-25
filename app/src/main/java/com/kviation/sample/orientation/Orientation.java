@@ -13,10 +13,10 @@ import android.view.WindowManager;
 public class Orientation implements SensorEventListener {
 
   public interface Listener {
-    void onOrientationChanged(float pitch, float roll);
+    void onOrientationChanged(float azimuth, float pitch, float roll);
   }
 
-  private static final int SENSOR_DELAY_MICROS = 16 * 1000; // 16ms
+  private static final int SENSOR_DELAY_MICROS = 10 * 1000; // 10ms
 
   private final WindowManager mWindowManager;
 
@@ -33,7 +33,7 @@ public class Orientation implements SensorEventListener {
     mSensorManager = (SensorManager) activity.getSystemService(Activity.SENSOR_SERVICE);
 
     // Can be null if the sensor hardware is not available
-    mRotationSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+    mRotationSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR);
   }
 
   public void startListening(Listener listener) {
@@ -78,43 +78,16 @@ public class Orientation implements SensorEventListener {
     float[] rotationMatrix = new float[9];
     SensorManager.getRotationMatrixFromVector(rotationMatrix, rotationVector);
 
-    final int worldAxisForDeviceAxisX;
-    final int worldAxisForDeviceAxisY;
-
-    // Remap the axes as if the device screen was the instrument panel,
-    // and adjust the rotation matrix for the device orientation.
-    switch (mWindowManager.getDefaultDisplay().getRotation()) {
-      case Surface.ROTATION_0:
-      default:
-        worldAxisForDeviceAxisX = SensorManager.AXIS_X;
-        worldAxisForDeviceAxisY = SensorManager.AXIS_Z;
-        break;
-      case Surface.ROTATION_90:
-        worldAxisForDeviceAxisX = SensorManager.AXIS_Z;
-        worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_X;
-        break;
-      case Surface.ROTATION_180:
-        worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_X;
-        worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_Z;
-        break;
-      case Surface.ROTATION_270:
-        worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_Z;
-        worldAxisForDeviceAxisY = SensorManager.AXIS_X;
-        break;
-    }
-
-    float[] adjustedRotationMatrix = new float[9];
-    SensorManager.remapCoordinateSystem(rotationMatrix, worldAxisForDeviceAxisX,
-        worldAxisForDeviceAxisY, adjustedRotationMatrix);
-
     // Transform rotation matrix into azimuth/pitch/roll
     float[] orientation = new float[3];
-    SensorManager.getOrientation(adjustedRotationMatrix, orientation);
+    SensorManager.getOrientation(rotationMatrix, orientation);
 
     // Convert radians to degrees
-    float pitch = orientation[1] * -57;
-    float roll = orientation[2] * -57;
+    float azimuth = orientation[0];// * -57;
+    float pitch = orientation[1]; // * -57;
+    float roll = orientation[2]; // * -57;
 
-    mListener.onOrientationChanged(pitch, roll);
+    mListener.onOrientationChanged(azimuth, pitch, roll);
   }
 }
+

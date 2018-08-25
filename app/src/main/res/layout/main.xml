@@ -6,6 +6,24 @@
     android:layout_height="match_parent"
     tools:context="com.kviation.sample.orientation.MainActivity">
 
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="111dp">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </TableLayout>
+
     <com.kviation.sample.orientation.AttitudeIndicator
         android:id="@+id/attitude_indicator"
         android:layout_width="150dp"
