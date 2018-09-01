@@ -22,6 +22,9 @@ public class Orientation implements SensorEventListener {
 
   private final SensorManager mSensorManager;
 
+  private int CountDown = 5;
+  private float Front = 0;
+
   @Nullable
   private final Sensor mRotationSensor;
 
@@ -33,7 +36,7 @@ public class Orientation implements SensorEventListener {
     mSensorManager = (SensorManager) activity.getSystemService(Activity.SENSOR_SERVICE);
 
     // Can be null if the sensor hardware is not available
-    mRotationSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR);
+    mRotationSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
   }
 
   public void startListening(Listener listener) {
@@ -82,8 +85,24 @@ public class Orientation implements SensorEventListener {
     float[] orientation = new float[3];
     SensorManager.getOrientation(rotationMatrix, orientation);
 
-    // Convert radians to degrees
     float azimuth = orientation[0];// * -57;
+    if (CountDown == 0) {
+      if (Front == 0) {
+        Front = orientation[0];
+      } else {
+        azimuth = orientation[0] - Front;
+        if (azimuth < -3) {
+          azimuth = (azimuth + 6);
+        } else if (azimuth > 3) {
+          azimuth = (azimuth - 6);
+        }
+      }
+    } else {
+      CountDown--;
+    }
+
+    // Convert radians to degrees
+
     float pitch = orientation[1]; // * -57;
     float roll = orientation[2]; // * -57;
 
