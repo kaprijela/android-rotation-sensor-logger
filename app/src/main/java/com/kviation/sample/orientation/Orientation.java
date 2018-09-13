@@ -23,7 +23,9 @@ public class Orientation implements SensorEventListener {
   private final SensorManager mSensorManager;
 
   private int CountDown = 5;
-  private float Front = 0;
+  private float StartAzi = 0;
+  private float StartPit = 0;
+  private float StartRol = 0;
 
   @Nullable
   private final Sensor mRotationSensor;
@@ -76,6 +78,15 @@ public class Orientation implements SensorEventListener {
     }
   }
 
+  private float checkOverflow(float orient) {
+    if (orient < -3) {
+      return (orient + 6);
+    } else if (orient > 3) {
+      return (orient - 6);
+    }
+    return orient;
+  }
+
   @SuppressWarnings("SuspiciousNameCombination")
   private void updateOrientation(float[] rotationVector) {
     float[] rotationMatrix = new float[9];
@@ -85,26 +96,24 @@ public class Orientation implements SensorEventListener {
     float[] orientation = new float[3];
     SensorManager.getOrientation(rotationMatrix, orientation);
 
-    float azimuth = orientation[0];// * -57;
+    float azimuth = orientation[0];
+    float pitch = orientation[1];
+    float roll = orientation[2];
+
     if (CountDown == 0) {
-      if (Front == 0) {
-        Front = orientation[0];
+      if (StartAzi == 0) {
+        StartAzi = orientation[0];
+        StartPit = orientation[1];
+        StartRol = orientation[2];
       } else {
-        azimuth = orientation[0] - Front;
-        if (azimuth < -3) {
-          azimuth = (azimuth + 6);
-        } else if (azimuth > 3) {
-          azimuth = (azimuth - 6);
-        }
+        azimuth = this.checkOverflow(orientation[0] - StartAzi);
+        pitch = this.checkOverflow(orientation[1] - StartPit);
+        roll = this.checkOverflow(orientation[2] - StartRol);
+
       }
     } else {
       CountDown--;
     }
-
-    // Convert radians to degrees
-
-    float pitch = orientation[1]; // * -57;
-    float roll = orientation[2]; // * -57;
 
     mListener.onOrientationChanged(azimuth, pitch, roll);
   }
